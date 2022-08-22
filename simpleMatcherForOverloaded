@@ -1,0 +1,100 @@
+
+// https://godbolt.org/: library: google test trunk + x86-64 gcc 11.2
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+//---------------------------------------------------------------------------------------------------------
+class LRvalueIF
+{
+public:
+  virtual void func(int& x) = 0;
+  virtual void func(int&& x) = 0;
+};
+//---------------------------------------------------------------------------------------------------------
+class LRvalue : public LRvalueIF
+{
+public:
+  LRvalue()
+  {
+    std::cout << "c-tor" << std::endl;
+  }
+  
+  void func(int& x)
+  {
+    std::cout << "func with arg Lvalue " << x << std::endl;
+  }
+  
+  void func(int&& x)
+  {
+    std::cout << "func with arg Rvalue " << x << std::endl;
+  }
+};
+//---------------------------------------------------------------------------------------------------------
+class MockLRvalue : public LRvalueIF
+{
+public:
+  MOCK_METHOD1(func, void(int& x));
+  MOCK_METHOD1(func, void(int&& x));
+};
+//---------------------------------------------------------------------------------------------------------
+class User
+{
+public:
+  User(std::unique_ptr<LRvalueIF> lrvalue)
+  : m_lrvalue(std::move(lrvalue))
+  { 
+  }
+
+  void use(int n)
+  {
+    m_lrvalue->func(n);
+  }
+
+private:
+  std::unique_ptr<LRvalueIF> m_lrvalue; //nullptr
+};
+//---------------------------------------------------------------------------------------------------------
+using ::testing::_;
+using ::testing::Matcher;
+
+class TestLRvalue : public ::testing::Test
+{
+public:
+  TestLRvalue()
+  {
+ 
+  }
+
+protected: // to be accesible in TEST_Fs
+   //User m_user;
+   //MockLRvalue m_mockLRvalue;
+};
+
+TEST_F(TestLRvalue, testLvalue)
+{
+  std::unique_ptr<MockLRvalue>mockLRvalue = std::make_unique<MockLRvalue>();
+  int var = 10;
+
+  EXPECT_CALL(*mockLRvalue, func(Matcher<int&>(var)));
+  EXPECT_CALL(*mockLRvalue, func(Matcher<int&&>(10))).Times(0);
+
+  User user(std::move(mockLRvalue));
+  user.use(var);
+}
+
+TEST_F(TestLRvalue, testRvalue)
+{ 
+  std::unique_ptr<MockLRvalue>mockLRvalue = std::make_unique<MockLRvalue>();
+
+  EXPECT_CALL(*mockLRvalue, func(Matcher<int&&>(55)));
+  User user(std::move(mockLRvalue));
+  user.use(55);
+}
+
+//---------------------------------------------------------------------------------------------------------
+int main()
+{
+  ::testing::InitGoogleTest();
+  return RUN_ALL_TESTS();
+}
+//---------------------------------------------------------------------------------------------------------
