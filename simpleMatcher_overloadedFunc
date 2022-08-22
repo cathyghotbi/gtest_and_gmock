@@ -1,0 +1,85 @@
+
+// https://godbolt.org/: library: google test trunk + x86-64 gcc 11.2
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+//---------------------------------------------------------------------------------------------------------
+class LRvalueIF
+{
+public:
+  virtual void func(int& x) = 0;
+  virtual void func(int&& x) = 0;
+};
+//---------------------------------------------------------------------------------------------------------
+class LRvalue : public LRvalueIF
+{
+public:
+  LRvalue()
+  {
+    std::cout << "c-tor" << std::endl;
+  }
+  
+  void func(int& x)
+  {
+    std::cout << "func with arg Lvalue " << x << std::endl;
+  }
+  
+  void func(int&& x)
+  {
+    std::cout << "func with arg Rvalue " << x << std::endl;
+  }
+};
+//---------------------------------------------------------------------------------------------------------
+class MockLRvalue : public LRvalueIF
+{
+public:
+  MOCK_METHOD1(func, void(int& x));
+  MOCK_METHOD1(func, void(int&& x));
+};
+//---------------------------------------------------------------------------------------------------------
+class User
+{
+public:
+  void use(int n)
+  {
+    lrvalue->func(n);
+  }
+
+private:
+  std::unique_ptr<LRvalueIF> lrvalue;
+};
+//---------------------------------------------------------------------------------------------------------
+using ::testing::_;
+using ::testing::Matcher;
+
+class TestLRvalue : public ::testing::Test
+{
+public:
+
+protected: // to be accesible in TEST_Fs
+   User m_user;
+   MockLRvalue m_mockLRvalue;
+};
+
+TEST_F(TestLRvalue, testLvalue)
+{
+  int var = 10;
+  EXPECT_CALL(m_mockLRvalue, func(Matcher<int&>(var)));
+  EXPECT_CALL(m_mockLRvalue, func(Matcher<int&&>(10))).Times(0);
+
+  m_user.use(var);
+}
+
+TEST_F(TestLRvalue, testRvalue)
+{ 
+  EXPECT_CALL(m_mockLRvalue, func(Matcher<int&&>(55)));
+  m_user.use(55);
+}
+
+//---------------------------------------------------------------------------------------------------------
+int main()
+{
+  ::testing::InitGoogleTest();
+  return RUN_ALL_TESTS();
+}
+//---------------------------------------------------------------------------------------------------------
