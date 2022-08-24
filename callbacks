@@ -4,7 +4,7 @@ Callback in real life, you call someone, they can not answer at that moment for 
 In programming languages, the concept of 'callback function' (lets name is callMeBack())is a function which is argument of another function (lets name it func()).
 As part of its body, func() will call callMeBack() sometime.
 In C++, lambda and function pointers support this concept.
-
+There are 2 types of callbacks, blocking ones (synchronous) and deferred ones (asynchronous). Difference is blocking ones are called before the caller function returns so the caller actually waits for them to finish their job.
 
 
 
