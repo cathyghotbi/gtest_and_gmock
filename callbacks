@@ -1,0 +1,20 @@
+Every programming language has its own tools to give the programmer the power to perform an idea.
+In this article we take C++ as the programming language and callback as idea to perform, also gmock for a way to test our code.
+Callback in real life, you call someone, they can not answer at that moment for any reason, you request for a callback so that they call you in a later time.
+In programming languages, the concept of 'callback function' (lets name is callMeBack())is a function which is argument of another function (lets name it func()).
+As part of its body, func() will call callMeBack() sometime.
+In C++, lambda and function pointers support this concept.
+
+
+
+
+
+
+
+
+References
+[1] https://en.wikipedia.org/wiki/Callback_(computer_programming)
+[2] https://en.cppreference.com/w/cpp/utility/functional/function
+[3] http://google.github.io/googletest/gmock_cook_book.html#MockFunction
+
+
