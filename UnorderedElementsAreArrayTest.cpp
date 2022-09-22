@@ -3,7 +3,6 @@
 //---------------------------------------------------------------------------------------------------------
 using ::testing::_;
 
-
 TEST(UnorderedElementsAreArrayTest, vectorTest)
 {
   const int actual[] = {1, 2, 3};
