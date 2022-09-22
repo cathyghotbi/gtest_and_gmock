@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h> // UnorderedElementsAreArray
 //---------------------------------------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------------------------------------
 using ::testing::_;
 
 
@@ -35,7 +33,6 @@ TEST(UnorderedElementsAreArrayNotSameOrderTest, vectorTest)
 
   EXPECT_THAT(actual, ::testing::UnorderedElementsAreArray(expected));
 }
-
 //---------------------------------------------------------------------------------------------------------
 int main()
 {
