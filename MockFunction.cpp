@@ -1,5 +1,3 @@
-
-// https://godbolt.org/: library: google test trunk + x86-64 gcc 11.2
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -23,7 +21,7 @@ public:
     m_futureTask(); 
   }
 private:
-  const std::function<void()> m_futureTask;
+  std::function<void()> m_futureTask;
 };
 //---------------------------------------------------------------------------------------------------------
 class MockFutureTask : public FutureTaskIf
@@ -35,17 +33,18 @@ public:
 class User
 {
 public:
-  User()
+  User(std::function<void()> futureTask)
+  : m_futureTask(futureTask)
   {
   }
 
   void userAction()
   {
-    m_futureTask->doTheTask();
+    m_futureTask();
   }
 
 private:
-  std::unique_ptr<FutureTaskIf> m_futureTask;
+  std::function<void()> m_futureTask;
 };
 //---------------------------------------------------------------------------------------------------------
 using ::testing::_;
@@ -56,8 +55,7 @@ class UserTest : public ::testing::Test
 public:
   UserTest()
   {
-    m_user.reset(new User());
-    //m_mockFutureTask.AsStdFunction();
+    m_user.reset(new User(m_mockFutureTask.AsStdFunction()));
   }
 
 protected:
